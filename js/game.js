@@ -37,36 +37,36 @@ const locations = [
     name: "town square",
     image: "url('./img/square.jpg')",
     buttonText: ["В лавку", "В пещеру", "Бить дракона!"],
-    buttonFunctions: [() => {goToLocation(1)}, () => {goToLocation(2)}, () => {fightMonster(2)}],
+    buttonFunctions: [() => { goToLocation(1) }, () => { goToLocation(2) }, () => { fightMonster(2) }],
     text: "Ты находишься на городской площади. Ты видишь вывеску \"Лавка\" и два указателя \"⇐ Пещера там\" и \"Не влезай, убьет(дракон) ⇒\". Куда ты направишься?"
   },
   {
     name: "store",
     image: "url('./img/store.jpg')",
     buttonText: ["Купить 10 здоровья (10 монет)", "Купить оружие (30 монет)", "Идти на площадь"],
-    buttonFunctions: [buyHealth, buyWeapon, () => {goToLocation(0)}],
+    buttonFunctions: [buyHealth, buyWeapon, () => { goToLocation(0) }],
     text: "Ты зашел в лавку."
   },
   {
     name: "cave",
     image: "url('./img/cave.jpg')",
     buttonText: ["Бить слизня", "Бить клыкастого монстра", "Идти на площадь"],
-    buttonFunctions: [() => {fightMonster(0)}, () => {fightMonster(1)}, () => {goToLocation(0)}],
+    buttonFunctions: [() => { fightMonster(0) }, () => { fightMonster(1) }, () => { goToLocation(0) }],
     text: "Ты зашел в пещеру. Фу, чем тут воняет? Ты видишь несколько монстров."
   },
   {
     name: "fight",
     image: ["url('./img/slime.jpg')", "url('./img/beast.jpg')", "url('./img/dragon.jpg')"],
     buttonText: ["Атаковать", "Уклониться", "Сбежать (позорно)"],
-    buttonFunctions: [attack, dodge, () => {goToLocation(0)}],
+    buttonFunctions: [attack, dodge, () => { goToLocation(0) }],
     text: "Битва с монстром началась."
   },
   {
     name: "kill monster",
     image: "url('./img/cave.jpg')",
     buttonText: ["Идти прямо", "Идти налево", "Идти направо"],
-    buttonFunctions: [() => {goToLocation(0)}, () => {goToLocation(0)}, () => {goToLocation(0)}],
-    text: 'Монстр заорал "Аргх!" и помер. Ты заработал очки опыта и, покопавшись под тушей монстра, нашел голду.'
+    buttonFunctions: [() => { goToLocation(0) }, () => { goToLocation(0) }, () => { goToLocation(0) }],
+    text: 'Монстр заорал "Аргх!" и помер. Ты заработал очки опыта и, покопавшись под тушей монстра, нашел голду. По какой тропинке будешь возвращаться в город?'
   },
   {
     name: "lose",
@@ -86,7 +86,7 @@ const locations = [
     name: "easter egg",
     image: "url('./img/easter-egg.jpg')",
     buttonText: ["2", "8", "Забить и идти на площадь"],
-    buttonFunctions: [pickTwo, pickEight, () => {goToLocation(0)}],
+    buttonFunctions: [pickTwo, pickEight, () => { goToLocation(0) }],
     text: "По пути в город ты заблудился и случайно забрел в секретное казино. Выбери число сверху. Случайным образом будут выбраны десять чисел от 0 до 10. Если выбранное тобой число совпадает с одним из случайных чисел, ты выиграешь!"
   }
 ];
@@ -246,13 +246,13 @@ function defeatMonster() {
   xpText.innerText = xp;
   const randomIndex = Math.floor(Math.random() * 10);
 
-  locations[4].buttonFunctions = [() => {goToLocation(0)}, () => {goToLocation(0)}, () => {goToLocation(0)}];
+  locations[4].buttonFunctions = [() => { goToLocation(0) }, () => { goToLocation(0) }, () => { goToLocation(0) }];
 
   if (randomIndex < 5) {
     const easterEggIndex = Math.floor(Math.random() * 3);
     locations[4].buttonFunctions[easterEggIndex] = easterEgg;
   } else {
-    locations[4].buttonFunctions = [() => {goToLocation(0)}, () => {goToLocation(0)}, () => {goToLocation(0)}];
+    locations[4].buttonFunctions = [() => { goToLocation(0) }, () => { goToLocation(0) }, () => { goToLocation(0) }];
   }
 
   update(locations[4]);
@@ -384,4 +384,4 @@ function startGame() {
   goToLocation(0);
 }
 
-export {renderTournamentTable, startGame};
+export { renderTournamentTable, startGame };
