@@ -1,12 +1,3 @@
-let xp = 0;
-let health = 100;
-let gold = 50;
-let currentWeapon = 0;
-let currentMonsterIndex;
-let monsterHealth;
-let inventory = ["дрын"];
-let stats = { username: '', battles: 0, exp: 0, win: '' };
-
 const start = document.querySelector('#start');
 const nameInput = document.querySelector('#username');
 const body = document.querySelector('body');
@@ -21,6 +12,21 @@ const goldText = document.querySelector("#goldText");
 const monsterStats = document.querySelector("#monsterStats");
 const monsterName = document.querySelector("#monsterName");
 const monsterHealthText = document.querySelector("#monsterHealth");
+
+const player = {
+  xp: 0,
+  health: 100,
+  gold: 50,
+  currentWeapon: 0,
+  inventory: ["дрын"]
+};
+
+const monster = {
+  currentMonsterIndex: 0,
+  monsterHealth: 0
+};
+
+let stats = { username: '', battles: 0, exp: 0, win: '' };
 const weapons = [
   { name: 'дрын', power: 5, src: './img/stick.png' },
   { name: 'кинжал', power: 30, src: './img/dagger.png' },
@@ -32,18 +38,21 @@ const monsters = [
   { name: "клыкастый монстр", level: 8, health: 60 },
   { name: "дракон", level: 20, health: 300 }
 ]
+const prices = { healthPrice: 10, weaponBuyPrice: 30, weaponSellPrice: 15 };
+const casino = { win: 20, lose: 10 };
+
 const locations = [
   {
     name: "town square",
     image: "url('./img/square.jpg')",
     buttonText: ["В лавку", "В пещеру", "Бить дракона!"],
     buttonFunctions: [() => { goToLocation(1) }, () => { goToLocation(2) }, () => { fightMonster(2) }],
-    text: "Ты находишься на городской площади. Ты видишь вывеску \"Лавка\" и два указателя \"⇐ Пещера там\" и \"Не влезай, убьет(дракон) ⇒\". Куда ты направишься?"
+    text: `Ты находишься на городской площади. Ты видишь вывеску "Лавка" и два указателя "⇐ Пещера там" и "Не влезай, убьет(дракон) ⇒". Куда ты направишься?`
   },
   {
     name: "store",
     image: "url('./img/store.jpg')",
-    buttonText: ["Купить 10 здоровья (10 монет)", "Купить оружие (30 монет)", "Идти на площадь"],
+    buttonText: [`Купить 10 здоровья (${prices.healthPrice} монет)`, `Купить оружие (${prices.weaponBuyPrice} монет)`, "Идти на площадь"],
     buttonFunctions: [buyHealth, buyWeapon, () => { goToLocation(0) }],
     text: "Ты зашел в лавку."
   },
@@ -93,14 +102,14 @@ const locations = [
 
 function updateInventory() {
   inventoryItems.innerHTML = '';
-  inventory.forEach((el) => {
+  player.inventory.forEach((el) => {
     const newWeapon = document.createElement('div');
     newWeapon.classList.add('inventory__item');
     const weapon = weapons.find(weapon => weapon.name === el);
     if (weapon) {
       newWeapon.innerHTML = `<img src="${weapon.src}" width="100" height="100" alt="${el}.">`;
     }
-    if (el === inventory[inventory.length - 1]) {
+    if (el === player.inventory[player.inventory.length - 1]) {
       newWeapon.classList.add('current');
     }
     inventoryItems.append(newWeapon);
@@ -125,12 +134,12 @@ function goToLocation(ind) {
 
 function buyHealth() {
   body.style.backgroundImage = 'url("./img/health.jpg")';
-  if (gold >= 10) {
-    gold -= 10;
-    health += 10;
-    goldText.innerText = gold;
-    healthText.innerText = health;
-    text.innerText = "Ты выпил какую-то мутную жижу с надиписью \"Ыликсир здаровя\". Ты чувствуешь себя человеком";
+  if (player.gold >= prices.healthPrice) {
+    player.gold -= prices.healthPrice;
+    player.health += prices.healthPrice;
+    goldText.innerText = player.gold;
+    healthText.innerText = player.health;
+    text.innerText = `Ты выпил какую-то мутную жижу с надиписью "Ыликсир здаровя". Ты чувствуешь себя человеком`;
   } else {
     text.innerText = "У тебя недостаточно голды, чтобы купить эликсир, нищеброд.";
   }
@@ -138,21 +147,21 @@ function buyHealth() {
 
 function buyWeapon() {
   body.style.backgroundImage = 'url("./img/weapon.jpg")';
-  if (currentWeapon < weapons.length - 1) {
-    if (gold >= 30) {
-      gold -= 30;
-      currentWeapon++;
-      goldText.innerText = gold;
-      let newWeapon = weapons[currentWeapon].name;
-      text.innerText = "Теперь у тебя есть " + newWeapon + ".";
-      inventory.push(newWeapon);
-      text.innerText += " У тебя в инвентаре: " + inventory;
+  if (player.currentWeapon < weapons.length - 1) {
+    if (player.gold >= prices.weaponBuyPrice) {
+      player.gold -= prices.weaponBuyPrice;
+      player.currentWeapon++;
+      goldText.innerText = player.gold;
+      let newWeapon = weapons[player.currentWeapon].name;
+      text.innerText = `Теперь у тебя есть ${newWeapon}.`;
+      player.inventory.push(newWeapon);
+      text.innerText += ` У тебя в инвентаре: ${player.inventory}`;
     } else {
       text.innerText = "У тебя недостаточно голды, чтобы купить оружие, нищеброд.";
     }
   } else {
     text.innerText = "У тебя уже и так самое мощное оружие, что тебе еще надо, собака сутулая? Ну можешь продать лишнее";
-    button2.innerText = "Продать оружие за 15 голды";
+    button2.innerText = `Продать оружие за ${prices.weaponSellPrice} голды`;
     button2.onclick = sellWeapon;
   }
   updateInventory();
@@ -160,12 +169,12 @@ function buyWeapon() {
 }
 
 function sellWeapon() {
-  if (inventory.length > 1) {
-    gold += 15;
-    goldText.innerText = gold;
-    let currentWeapon = inventory.shift();
-    text.innerText = "Ты продал " + currentWeapon + ".";
-    text.innerText += " У тебя в инвентаре: " + inventory;
+  if (player.inventory.length > 1) {
+    player.gold += prices.weaponSellPrice;
+    goldText.innerText = player.gold;
+    let currentSold = player.inventory.shift();
+    text.innerText = `Ты продал ${currentSold}.`;
+    text.innerText += ` У тебя в инвентаре: ${player.inventory}`;
   } else {
     text.innerText = "Не продавай свое единственное оружие, ты чо!";
   }
@@ -174,76 +183,76 @@ function sellWeapon() {
 }
 
 function showWeapon() {
-  document.querySelector('.weapon').textContent = inventory[inventory.length - 1];
+  document.querySelector('.weapon').textContent = player.inventory[player.inventory.length - 1];
 }
 
 function fightMonster(ind) {
-  currentMonsterIndex = ind;
+  monster.currentMonsterIndex = ind;
   goFight();
 }
 
 function goFight() {
-  body.style.backgroundImage = locations[3].image[currentMonsterIndex];
+  body.style.backgroundImage = locations[3].image[monster.currentMonsterIndex];
   update(locations[3]);
-  monsterHealth = monsters[currentMonsterIndex].health;
+  monster.monsterHealth = monsters[monster.currentMonsterIndex].health;
   monsterStats.style.display = "block";
-  monsterName.innerText = monsters[currentMonsterIndex].name;
-  monsterHealthText.innerText = monsterHealth;
+  monsterName.innerText = monsters[monster.currentMonsterIndex].name;
+  monsterHealthText.innerText = monster.monsterHealth;
   stats.battles++;
 }
 
 function attack() {
-  text.innerText = monsters[currentMonsterIndex].name + " атакует.";
-  text.innerText += " Ты взял свой " + weapons[currentWeapon].name + " и атакуешь.";
-  health -= getMonsterAttackValue(monsters[currentMonsterIndex].level);
+  text.innerText = monsters[monster.currentMonsterIndex].name + " атакует.";
+  text.innerText += ` Ты взял свой ${weapons[player.currentWeapon].name} и атакуешь.`;
+  player.health -= getMonsterAttackValue(monsters[monster.currentMonsterIndex].level);
 
-  if (health < 0) {
-    health = 0;
+  if (player.health < 0) {
+    player.health = 0;
   }
 
   if (isMonsterHit()) {
-    monsterHealth -= weapons[currentWeapon].power + Math.floor(Math.random() * xp) + 1;
+    monster.monsterHealth -= weapons[player.currentWeapon].power + Math.floor(Math.random() * player.xp) + 1;
   } else {
     text.innerText += " Ты промазал (лох).";
   }
-  healthText.innerText = health;
-  monsterHealthText.innerText = monsterHealth;
-  if (health <= 0) {
+  healthText.innerText = player.health;
+  monsterHealthText.innerText = monster.monsterHealth;
+  if (player.health <= 0) {
     loseGame();
-  } else if (monsterHealth <= 0) {
-    if (currentMonsterIndex === 2) {
+  } else if (monster.monsterHealth <= 0) {
+    if (monster.currentMonsterIndex === 2) {
       winGame();
     } else {
       defeatMonster();
     }
   }
-  if (Math.random() <= .1 && inventory.length !== 1) {
-    text.innerText += "\nУпс! Твой " + inventory.pop() + " сломался.";
-    currentWeapon--;
+  if (Math.random() <= .1 && player.inventory.length !== 1) {
+    text.innerText += "\nУпс! Твой " + player.inventory.pop() + " сломался.";
+    player.currentWeapon--;
     updateInventory();
     showWeapon();
   }
 }
 
 function getMonsterAttackValue(level) {
-  const hit = (level * 5) - (Math.floor(Math.random() * xp));
+  const hit = (level * 5) - (Math.floor(Math.random() * player.xp));
   return hit > 0 ? hit : 0;
 }
 
 function isMonsterHit() {
-  return Math.random() > .2 || health < 20;
+  return Math.random() > .2 || player.health < 20;
 }
 
 function dodge() {
-  text.innerText = "Ты уклонился. " + monsters[currentMonsterIndex].name + " не нанес тебе урона.";
+  text.innerText = "Ты уклонился. " + monsters[monster.currentMonsterIndex].name + " не нанес тебе урона.";
 }
 
 function defeatMonster() {
-  gold += Math.floor(monsters[currentMonsterIndex].level * 6.7);
-  xp += monsters[currentMonsterIndex].level;
-  stats.exp = xp;
-  goldText.innerText = gold;
-  xpText.innerText = xp;
+  player.gold += Math.floor(monsters[monster.currentMonsterIndex].level * 6.7);
+  player.xp += monsters[monster.currentMonsterIndex].level;
+  stats.exp = player.xp;
+  goldText.innerText = player.gold;
+  xpText.innerText = player.xp;
   const randomIndex = Math.floor(Math.random() * 10);
 
   locations[4].buttonFunctions = [() => { goToLocation(0) }, () => { goToLocation(0) }, () => { goToLocation(0) }];
@@ -276,15 +285,16 @@ function winGame() {
 
 function restartGame() {
   stats = { username: '', battles: 0, exp: 0, win: '' };
-  xp = 0;
-  health = 100;
-  gold = 50;
-  currentWeapon = 0;
-  inventory = ["дрын"];
+  player.xp = 0;
+  player.health = 100;
+  player.gold = 50;
+  player.currentWeapon = 0;
+  player.inventory = ["дрын"];
   updateInventory();
-  goldText.innerText = gold;
-  healthText.innerText = health;
-  xpText.innerText = xp;
+  showWeapon();
+  goldText.innerText = player.gold;
+  healthText.innerText = player.health;
+  xpText.innerText = player.xp;
   goToLocation(0);
   nameInput.value = '';
   start.classList.add('active');
@@ -314,18 +324,18 @@ function pick(guess) {
   }
   if (numbers.includes(guess)) {
     text.innerText += "\nУгадал! Ты выиграл 20 голды!";
-    gold += 20;
-    goldText.innerText = gold;
+    player.gold += casino.win;
+    goldText.innerText = player.gold;
   } else {
     text.innerText += "\nНе угадал (лох)! Потеряй 10 здоровья!";
-    health -= 10;
+    player.health -= casino.lose;
 
-    if (health < 0) {
-      health = 0;
+    if (player.health < 0) {
+      player.health = 0;
     }
 
-    healthText.innerText = health;
-    if (health <= 0) {
+    healthText.innerText = player.health;
+    if (player.health <= 0) {
       loseGame();
     }
   }
@@ -381,6 +391,7 @@ function startGame() {
   button2.onclick = () => goToLocation(2);
   button3.onclick = () => fightMonster(2);
   updateInventory();
+  showWeapon();
   goToLocation(0);
 }
 
